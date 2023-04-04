@@ -1,34 +1,36 @@
-const authFrom = document.getElementById('signin__form')
-const signForm = document.getElementById('signin')
-const idUser = document.getElementById('user_id')
-const welcomeWindow = document.getElementById('welcome')
+const xhr = new XMLHttpRequest();
 
-if (localStorage.getItem('user')) {
-    idUser.innerText = localStorage.getItem('user')
-    welcomeWindow.classList.add('welcome_active')
-    signForm.classList.remove('signin_active')
-}
+document.querySelector('form').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const formData = new FormData(document.forms.signin__form);
 
-authFrom.addEventListener('submit', (event) => {
-    event.preventDefault()
+    xhr.open('POST', 'https://students.netoservices.ru/nestjs-backend/auth');
+    xhr.responseType = 'json';
+    xhr.send(formData);
+});
 
-    const xhr = new XMLHttpRequest()
+xhr.addEventListener('load', function() {
+    if (this.status === 201) {
+        const response = this.response;
+        if (response['success']) {
+            localStorage.setItem('auth', JSON.stringify({'user_id': response['user_id']}));
+            document.querySelector('.signin').classList.remove('signin_active');
+            document.getElementById('user_id').innerText = response['user_id'];
+            document.querySelector('.welcome').classList.add('welcome_active');
+        } else {
+            alert('Неверный логин/пароль!');
+        };
+    };
+});
 
-    xhr.open('POST', 'https://students.netoservices.ru/nestjs-backend/auth', false)
+xhr.addEventListener('loadstart', () => {
+    document.querySelector('input[name=login]').value = '';
+    document.querySelector('input[name=password]').value = '';
+});
 
-    const formData = new FormData(authFrom)
-
-    xhr.send(formData)
-
-    successStatus = JSON.parse(xhr.response)['success']
-    userId = JSON.parse(xhr.response)['user_id']
-    
-    if (successStatus) {
-        idUser.innerText = userId
-        welcomeWindow.classList.add('welcome_active')
-        signForm.classList.remove('signin_active')
-        localStorage.setItem('user', userId)
-    } else {
-        alert('Wrong login or password!')
-    }
-})
+document.getElementById('logout__btn').addEventListener('click', () => {
+    localStorage.removeItem('auth');
+    document.querySelector('.welcome').classList.remove('welcome_active');
+    document.querySelector('.signin').classList.add('signin_active');
+    document.getElementById('user_id').innerText = '';
+});
