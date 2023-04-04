@@ -1,9 +1,14 @@
-const textArea = document.getElementById('editor')
+const textContainer = document.querySelector('#editor');
 
-if (localStorage.getItem('text')) {
-    textArea.value = localStorage.getItem('text')
-}
+textContainer.addEventListener('change', function() {
+    localStorage.setItem('text-editor', textContainer.value);
+});
 
-textArea.addEventListener('keyup', event => {
-    localStorage.setItem('text', textArea.value)
+window.onload = () => {
+    textContainer.value = localStorage.getItem('text-editor');
+};
+
+document.querySelector('button').addEventListener('click', () => {
+    textContainer.value = '';
+    localStorage.removeItem('text-editor');
 })
